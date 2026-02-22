@@ -2,14 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-.wmde-markdown h1, .wmde-markdown h2, .wmde-markdown h3, .wmde-markdown h4, .wmde-markdown h5, .wmde-markdown h6 {
-  margin-top: 5px;
-  margin-bottom: 0px;
-  border: none;
+.cm-heading-1 {
+  font-size: 2rem;
+  font-weight: bold;
 }
 
-/* Checkbox propre */
-.w-md-editor-preview input[type="checkbox"] {
-  transform: scale(1.1);
-  margin-right: 6px;
+.cm-heading-2 {
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
+.cm-heading-content-1 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.cm-heading-content-2 {
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
+.cm-heading-content-3,
+.cm-heading-content-4,
+.cm-heading-content-5,
+.cm-heading-content-6 {
+  font-weight: 600;
+}
+
+.cm-bold {
+  font-weight: bold;
+}
+
+.editor-surface .cm-editor {
+  height: 100%;
+  background-color: transparent;
+}
+
+.editor-surface .cm-scroller {
+  @apply text-gray-100;
+}
+
+.editor-surface .cm-content {
+  caret-color: white;
+}
+
+.editor-surface .cm-cursor,
+.editor-surface .cm-dropCursor {
+  border-left-color: white !important;
 }

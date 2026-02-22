@@ -1,11 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Note } from '../types/Note';
 import type { Category } from '../types/Category';
-import MDEditor from '@uiw/react-md-editor';
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import Editor from '../components/editor/Editor';
 import "katex/dist/katex.min.css";
 import { v4 as uuidv4 } from 'uuid'
 
@@ -16,8 +12,28 @@ interface CategoryPageProps {
   updateCategory: (cat: Category) => void;
 }
 
+const toDate = (value: Date | string | number) => {
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const formatDate = (value: Date | string | number, withTime = false) => {
+  const date = toDate(value);
+  if (!date) return "Date invalide";
+
+  if (withTime) {
+    return date.toLocaleDateString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  return date.toLocaleDateString('fr-FR');
+};
+
 const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCategory }) => {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [noteContent, setNoteContent] = useState("")
   const contentRef = useRef<string>("");
   const [lastDeleted, setLastDeleted] = useState<Note | null>(null);  
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
@@ -35,6 +51,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
     const updatedCategory = { ...category, notes: [newNote, ...category.notes] };
     updateCategory(updatedCategory);
     setSelectedNote(newNote);
+    setNoteContent("");
     contentRef.current = "";
   };
 
@@ -67,17 +84,6 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
     });
   };
 
-  const handleContentChange = (value?: string) => {
-    if (!selectedNote || value === undefined) return;
-    contentRef.current = value;
-    const updatedNote = { ...selectedNote, content: value, updatedAt: new Date() };
-    setSelectedNote(updatedNote);
-    updateCategory({
-      ...category,
-      notes: category.notes.map(n => (n.id === updatedNote.id ? updatedNote : n))
-    });
-  };
-
   useEffect(() => {
     const handleUndo = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "z") {
@@ -100,6 +106,24 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
     };
   }, [lastDeleted, category]);
 
+  useEffect(() => {
+    if (category.notes.length === 0) {
+      setSelectedNote(null);
+      setNoteContent("");
+      return;
+    }
+
+    const hasSelected =
+      selectedNote && category.notes.some((note) => note.id === selectedNote.id);
+
+    if (!hasSelected) {
+      const firstNote = category.notes[0];
+      setSelectedNote(firstNote);
+      setNoteContent(firstNote.content ?? "");
+      contentRef.current = firstNote.content ?? "";
+    }
+  }, [category.notes, selectedNote]);
+
   return (
     <div className="h-screen w-screen flex bg-gray-900 text-gray-100">
       {/* Sidebar */}
@@ -121,6 +145,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
               }`}
               onClick={() => {
                 setSelectedNote(note);
+                setNoteContent(note.content ?? "");
                 contentRef.current = note.content;
               }}
             >
@@ -141,11 +166,8 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
 
               {/* Dates */}
               <div className="text-gray-400 text-xs mt-1">
-                Créé: {note.createdAt.toLocaleDateString('fr-FR')} | Modifié:{" "}
-                {note.updatedAt.toLocaleDateString('fr-FR', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
+                Créé: {formatDate(note.createdAt)} | Modifié:{" "}
+                {formatDate(note.updatedAt, true)}
               </div>
             </div>
           ))}
@@ -171,51 +193,10 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
             />
             {/* Markdown Editor */}
             <div className="flex-1 overflow-hidden" data-color-mode="dark">
-              <MDEditor
-              value={selectedNote.content}
-              onChange={handleContentChange}
-              previewOptions={{
-                remarkPlugins: [remarkGfm, remarkBreaks, remarkMath],
-                rehypePlugins: [rehypeKatex],
-                components: {
-                  input: ({ ...props }) => {
-                    if (props.type === "checkbox") {
-                      return (
-                        <input
-                          type="checkbox"
-                          checked={props.checked}
-                          onChange={() => {
-                            const lines = selectedNote.content.split("\n");
-                            let taskIndex = -1;
-
-                            const newLines = lines.map((line) => {
-                              if (line.match(/- \[[ x]\]/)) {
-                                taskIndex++;
-                                if (taskIndex === props.node?.position?.start.line! - 1) {
-                                  return line.includes("[ ]")
-                                    ? line.replace("[ ]", "[x]")
-                                    : line.replace("[x]", "[ ]");
-                                }
-                              }
-                              return line;
-                            });
-
-                            handleContentChange(newLines.join("\n"));
-                          }}
-                        />
-                      );
-                    }
-                    return <input {...props} />;
-                  },
-                },
-              }}
-              height="100%"
-              textareaProps={{ placeholder: "Écrivez votre note ici..." }}
-              style={{
-                backgroundColor: "transparent",
-                height: "100%",
-              }}
-            />
+              <Editor
+                value={noteContent}
+                onChange={setNoteContent}
+              />
             </div>
           </>
         ) : (
