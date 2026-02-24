@@ -1,73 +1,120 @@
-# React + TypeScript + Vite
+# Second Brain
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Second Brain is a desktop knowledge app built with **React + Vite + Electron**.
+It lets you organize notes by category, edit in Markdown with live visual helpers, and store everything in a local vault folder on your machine.
 
-Currently, two official plugins are available:
+By ChocSathan and some vibe codding
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- **Desktop-first app** (Electron) with local file-based persistence
+- **Categories + notes** management (create, edit, delete)
+- **CodeMirror editor** with Markdown support
+- **Live preview helpers** in the editor:
+	- Checkboxes (`[ ]`, `[x]`) as interactive toggles
+	- List bullet enhancement
+	- Inline formatting helpers (`**bold**`, `_italic_`, `--strike--`)
+	- KaTeX math rendering (`$...$`, `$$...$$`)
+- **Vault folder selection** from the app UI
+- **Local fallback storage** (`localStorage`) when no vault is configured
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+## Tech Stack
 
-## Expanding the ESLint configuration
+- React 19 + TypeScript
+- Vite 7
+- Electron 40
+- Tailwind CSS
+- CodeMirror 6
+- markdown-it + KaTeX
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 18+ (Node 20 LTS recommended)
+- npm
+- Windows/macOS/Linux for development
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Getting Started
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+This starts:
+- Vite dev server on `http://localhost:5173`
+- Electron app window connected to that server
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+> Use the **Electron window** (not only the browser tab), because vault APIs are exposed through Electron preload.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Available Scripts
+
+- `npm run dev` — Run Vite + Electron in development
+- `npm run electron` — Launch Electron only
+- `npm run build` — Build frontend with Vite
+- `npm run dist` — Build app and package with electron-builder
+
+## Vault Storage Model
+
+When a vault folder is configured, data is written to the filesystem.
+
+- Vault index file: `second-brain.index.json`
+- Legacy fallback index file (read-only migration path): `second-brain.categories.json`
+- One folder per category (slug + id)
+- One `.md` file per note (slug + id)
+
+Each note markdown file contains frontmatter:
+
+```md
+---
+id: "..."
+title: "..."
+createdAt: "..."
+updatedAt: "..."
+---
+
+Note body...
 ```
+
+## Data Loading Behavior
+
+1. App tries to load from vault if configured
+2. If vault is empty but local cache exists, local data is written into vault
+3. If vault is unavailable, app falls back to `localStorage`
+
+## Security Notes
+
+- `contextIsolation` is enabled in Electron BrowserWindow
+- Renderer only accesses filesystem through whitelisted IPC APIs exposed by preload:
+	- `vault:getFolder`
+	- `vault:setFolder`
+	- `vault:selectFolder`
+	- `vault:readCategories`
+	- `vault:writeCategories`
+
+## Project Structure
+
+```text
+src/
+	components/editor/      # CodeMirror editor + live preview plugins
+	pages/                  # Home and Category screens
+	services/               # Vault config helpers
+	store/                  # Persistence logic
+	types/                  # Domain types (Category, Note)
+electron/
+	main.ts                 # Main process + vault filesystem logic + IPC
+	preload.cjs             # Safe API bridge to renderer
+```
+
+## Packaging
+
+`electron-builder` config is in `package.json`.
+Current target:
+- Windows `nsis`
+
+Output directory:
+- `dist_electron/`
+
+## Notes
+
+- UI text is currently in French.
+- The app is private (`"private": true`) and not configured for npm publishing.
