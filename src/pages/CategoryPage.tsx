@@ -80,9 +80,28 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
     setSelectedNote(updatedNote);
     updateCategory({
       ...category,
+      updatedAt: new Date(),
       notes: category.notes.map(n => (n.id === updatedNote.id ? updatedNote : n))
     });
   };
+
+  useEffect(() => {
+    if (!selectedNote) return;
+    if (noteContent === selectedNote.content) return;
+
+    const updatedNote = {
+      ...selectedNote,
+      content: noteContent,
+      updatedAt: new Date(),
+    };
+
+    setSelectedNote(updatedNote);
+    updateCategory({
+      ...category,
+      updatedAt: new Date(),
+      notes: category.notes.map((n) => (n.id === updatedNote.id ? updatedNote : n)),
+    });
+  }, [noteContent, selectedNote, category, updateCategory]);
 
   useEffect(() => {
     const handleUndo = (e: KeyboardEvent) => {

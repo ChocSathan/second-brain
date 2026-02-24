@@ -33,6 +33,11 @@
   font-weight: bold;
 }
 
+.cm-heading-marker-hidden,
+.cm-bold-marker-hidden {
+  opacity: 0;
+}
+
 .editor-surface .cm-editor {
   height: 100%;
   background-color: transparent;

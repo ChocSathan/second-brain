@@ -11,7 +11,7 @@ export const livePreview = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged) {
+      if (update.docChanged || update.viewportChanged || update.selectionSet) {
         this.decorations = this.buildDecorations(update.view)
       }
     }
@@ -19,6 +19,9 @@ export const livePreview = ViewPlugin.fromClass(
     buildDecorations(view: EditorView) {
       const builder = new RangeSetBuilder<Decoration>()
       const { doc } = view.state
+      const cursorPos = view.state.selection.main.head
+      const activeLine = doc.lineAt(cursorPos)
+      const activeLineNumber = activeLine.number
 
       for (let { from, to } of view.visibleRanges) {
         let linePos = from
@@ -26,6 +29,7 @@ export const livePreview = ViewPlugin.fromClass(
         while (linePos <= to) {
           const line = doc.lineAt(linePos)
           const lineText = line.text
+          const isActiveLine = line.number === activeLineNumber
 
           const headingMatch = /^(#{1,6})\s+/.exec(lineText)
           if (headingMatch) {
@@ -39,6 +43,14 @@ export const livePreview = ViewPlugin.fromClass(
                 attributes: { class: `cm-heading-${level}` }
               })
             )
+
+            if (!isActiveLine && headingContentStart > line.from) {
+              builder.add(
+                line.from,
+                headingContentStart,
+                Decoration.mark({ class: "cm-heading-marker-hidden" })
+              )
+            }
 
             if (headingContentStart <= line.to) {
               builder.add(
@@ -62,6 +74,22 @@ export const livePreview = ViewPlugin.fromClass(
                 contentEnd,
                 Decoration.mark({ class: "cm-bold" })
               )
+
+              if (!isActiveLine) {
+                builder.add(
+                  matchStart,
+                  contentStart,
+                  Decoration.mark({ class: "cm-bold-marker-hidden" })
+                )
+                const markerEndEnd = Math.min(line.to, contentEnd + 2)
+                if (contentEnd < markerEndEnd) {
+                  builder.add(
+                    contentEnd,
+                    markerEndEnd,
+                    Decoration.mark({ class: "cm-bold-marker-hidden" })
+                  )
+                }
+              }
             }
           }
 
