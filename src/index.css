@@ -3,26 +3,35 @@
 @tailwind utilities;
 
 .cm-heading-1 {
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: bold;
 }
 
 .cm-heading-2 {
+  font-size: 1.9rem;
+  font-weight: bold;
+}
+
+.cm-heading-3 {
   font-size: 1.6rem;
   font-weight: bold;
 }
 
 .cm-heading-content-1 {
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: bold;
 }
 
 .cm-heading-content-2 {
+  font-size: 1.9rem;
+  font-weight: bold;
+}
+
+.cm-heading-content-3 {
   font-size: 1.6rem;
   font-weight: bold;
 }
 
-.cm-heading-content-3,
 .cm-heading-content-4,
 .cm-heading-content-5,
 .cm-heading-content-6 {
@@ -33,8 +42,21 @@
   font-weight: bold;
 }
 
+.cm-italic {
+  font-style: italic;
+}
+
+.cm-strikethrough {
+  text-decoration: line-through;
+}
+
+.cm-inline-math {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-style: italic;
+}
+
 .cm-heading-marker-hidden,
-.cm-bold-marker-hidden {
+.cm-inline-marker-hidden {
   opacity: 0;
 }
 
@@ -54,4 +76,66 @@
 .editor-surface .cm-cursor,
 .editor-surface .cm-dropCursor {
   border-left-color: white !important;
+}
+
+.cm-katex-inline {
+  @apply align-middle;
+}
+
+.cm-katex-block {
+  @apply block;
+}
+
+.cm-katex-block .katex-display {
+  margin: 0;
+}
+
+.cm-list-content {
+  @apply text-gray-100;
+}
+
+.cm-list-bullet {
+  @apply text-gray-300;
+}
+
+.cm-list-bullet-depth-0 {
+  @apply text-gray-200;
+}
+
+.cm-list-bullet-depth-1 {
+  @apply text-gray-300;
+}
+
+.cm-list-bullet-depth-2 {
+  @apply text-gray-400;
+}
+
+.cm-checkbox-content {
+  @apply text-gray-100;
+}
+
+.cm-checkbox-box {
+  @apply text-purple-300;
+}
+
+.cm-checkbox-widget {
+  @apply align-middle cursor-pointer;
+  accent-color: rgb(147 51 234);
+  margin-right: 0.4rem;
+}
+
+.cm-quote-content {
+  @apply text-gray-300;
+  border-left: 3px solid rgb(75 85 99);
+  padding-left: 0.6rem;
+}
+
+.cm-inline-code {
+  @apply bg-gray-700 rounded px-1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.cm-code-block-line {
+  @apply bg-gray-800 text-gray-100;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }

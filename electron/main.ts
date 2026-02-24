@@ -389,17 +389,19 @@ function createWindow() {
   })
 
   const connectSources = app.isPackaged
-    ? "'self'"
+    ? "'self' file: data:"
     : "'self' http://localhost:5173 ws://localhost:5173"
 
-  const scriptSources = app.isPackaged ? "'self'" : "'self' 'unsafe-inline'"
+  const scriptSources = app.isPackaged
+    ? "'self' 'unsafe-inline' file:"
+    : "'self' 'unsafe-inline'"
 
   const csp = [
-    "default-src 'self'",
+    "default-src 'self' file: data: blob:",
     `script-src ${scriptSources}`,
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
-    "font-src 'self' data:",
+    "style-src 'self' 'unsafe-inline' file:",
+    "img-src 'self' data: blob: file:",
+    "font-src 'self' data: file:",
     `connect-src ${connectSources}`,
     "object-src 'none'",
     "base-uri 'self'",
@@ -419,10 +421,16 @@ function createWindow() {
   mainWindow.setMenu(null)
 
   if (app.isPackaged) {
-    mainWindow.loadFile("dist/index.html")
+    const packagedIndexPath = path.join(app.getAppPath(), "dist", "index.html")
+    console.log("[Electron] packaged index path:", packagedIndexPath, "| exists:", fs.existsSync(packagedIndexPath))
+    mainWindow.loadFile(packagedIndexPath)
   } else {
     mainWindow.loadURL("http://localhost:5173")
   }
+
+  mainWindow.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    console.error("[Electron] did-fail-load", { errorCode, errorDescription, validatedURL })
+  })
 
   // Open DevTools in development so you can use Ctrl+Shift+I (or F12)
   if (!app.isPackaged) {

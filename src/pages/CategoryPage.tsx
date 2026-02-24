@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Note } from '../types/Note';
 import type { Category } from '../types/Category';
 import Editor from '../components/editor/Editor';
@@ -34,7 +34,6 @@ const formatDate = (value: Date | string | number, withTime = false) => {
 const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCategory }) => {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [noteContent, setNoteContent] = useState("")
-  const contentRef = useRef<string>("");
   const [lastDeleted, setLastDeleted] = useState<Note | null>(null);  
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
 
@@ -52,7 +51,6 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
     updateCategory(updatedCategory);
     setSelectedNote(newNote);
     setNoteContent("");
-    contentRef.current = "";
   };
 
   const confirmDeleteNote = () => {
@@ -139,7 +137,6 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
       const firstNote = category.notes[0];
       setSelectedNote(firstNote);
       setNoteContent(firstNote.content ?? "");
-      contentRef.current = firstNote.content ?? "";
     }
   }, [category.notes, selectedNote]);
 
@@ -165,7 +162,6 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
               onClick={() => {
                 setSelectedNote(note);
                 setNoteContent(note.content ?? "");
-                contentRef.current = note.content;
               }}
             >
               {/* Header : titre + bouton */}
@@ -210,7 +206,6 @@ const CategoryPage: React.FC<CategoryPageProps> = ({ category, goBack, updateCat
               value={selectedNote.title}
               onChange={(e) => handleTitleChange(e.target.value)}
             />
-            {/* Markdown Editor */}
             <div className="flex-1 overflow-hidden" data-color-mode="dark">
               <Editor
                 value={noteContent}
